@@ -81,7 +81,7 @@ extension BooksViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "BooksTableViewCell", for: indexPath) as! BooksTableViewCell
         cell.labelNameBook.text = model.items[indexPath.row].volumeInfo.title
         let autors = model.items[indexPath.row].volumeInfo.authors?.joined(separator: ",")
-        cell.labelAuthorBook.text = autors != "" ? autors : "Autor no registrado"
+        cell.labelAuthorBook.text = autors != "" ? autors : "Autor desconocido"
         if let imageLinks = model.items[indexPath.row].volumeInfo.imageLinks, let thumbnailURLString = imageLinks.thumbnail, let thumbnailURL = URL(string: thumbnailURLString.replacingOccurrences(of: "http", with: "https")) {
             print("esto es mi image", thumbnailURL)
             cell.imageBook?.sd_setImage(with: thumbnailURL, placeholderImage: UIImage(named: "default_image"))
@@ -89,6 +89,13 @@ extension BooksViewController: UITableViewDelegate, UITableViewDataSource {
             cell.imageBook?.image = UIImage(named: "default_image")
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedItem = model.items[indexPath.row]
+        let vc = DetailsBooksViewController()
+        vc.item = selectedItem
+        self.present(vc, animated: true)
     }
 }
 
