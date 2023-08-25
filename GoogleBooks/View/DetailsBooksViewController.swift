@@ -30,26 +30,31 @@ class DetailsBooksViewController: UIViewController {
         imageBook.layer.cornerRadius = 10
     }
     
-    func setupView(){
+    func configureLabels(){
         labelId.text = "Id del libro:\n\n\(item.id)"
         labelName.text = "Nombre del libro:\n\n\(item.volumeInfo.title)"
-        let author = item.volumeInfo.authors?.joined(separator: ",")
         
-        if item.volumeInfo.description != "" && item.volumeInfo.description != nil {
+        if let description = item.volumeInfo.description, !description.isEmpty {
             labelDescriptionBook.text = "Sinopsis:\n\n\(item.volumeInfo.description!)"
         } else {
             labelDescriptionBook.hide(true, height: 0)
         }
-        if item.volumeInfo.publishedDate != "" && item.volumeInfo.publishedDate != nil {
+        
+        if let publishedDate = item.volumeInfo.publishedDate, !publishedDate.isEmpty {
             labelDatePublished.text = "Fecha de publicación:\n\n\(item.volumeInfo.publishedDate!)"
         } else {
             labelDatePublished.hide(true, height: 0)
         }
-        if author != "" && author != nil {
-            labelAuthor.text = "Autor(es):\n\n\(author!)"
+        
+        if let author = item.volumeInfo.authors?.joined(separator: ","), !author.isEmpty {
+            labelAuthor.text = "Autor(es):\n\n\(author)"
         } else {
             labelAuthor.hide(true, height: 0)
         }
+    }
+    
+    func setupView(){
+        configureLabels()
         
         if let imageLinks = item.volumeInfo.imageLinks, let thumbnailURLString = imageLinks.thumbnail, let thumbnailURL = URL(string: thumbnailURLString.replacingOccurrences(of: "http", with: "https")) {
             print("esto es mi image", thumbnailURL)

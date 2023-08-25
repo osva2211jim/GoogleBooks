@@ -12,16 +12,16 @@ extension URLSession {
     
     static let apiKey = "AIzaSyBB1V9jE8u-mBZELDCdDbVRQDjdZluEJD8"
 
-    static func fetchBooks(withQuery query: String, completion: @escaping (Result<ModelBooks, Error>) -> Void) {
+    static func fetchBooks(withQuery query: String, completion: @escaping (Result<ModelBooks, Error>) -> Void) {//metodo para peticion http
         let urlString = "https://www.googleapis.com/books/v1/volumes?q=\(query)&key=\(apiKey)"
         
-        guard let url = URL(string: urlString) else {
+        guard let url = URL(string: urlString) else {//verificacion url
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
         }
         
         URLSession.shared.dataTask(with: url) { data, _, error in
-            if let error = error {
+            if let error = error { //creacion de tarea con tres casos
                 completion(.failure(error))
                 return
             }
@@ -38,7 +38,7 @@ extension URLSession {
             } catch {
                 completion(.failure(error))
             }
-        }.resume()
+        }.resume()//aqui se activa la solicitud
     }
     
     static func fetchBooksPage(withQuery query: String, startIndex: Int, pageSize: Int, completion: @escaping (Result<ModelBooks, Error>) -> Void) {
