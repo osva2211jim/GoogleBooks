@@ -10,7 +10,7 @@ import Foundation
 struct ModelBooks: Decodable {
     let kind: String
     let totalItems: Int
-    let items: [Item]
+    var items: [Item] = []
 }
 
 // MARK: - Item

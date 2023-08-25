@@ -11,14 +11,16 @@ import SDWebImage
 class BooksViewController: UIViewController {
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var labelTitle: UILabel!
-    @IBOutlet weak var buttonMore: UIButton!
     @IBOutlet weak var tableViewBooks: UITableView!
     
     var model: ModelBooks!
+    var isLoadingData = false
+    let pageSize = 10
+    var searchQuery = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureTableView()
+        configureDelegate()
         configureUI()
         // Do any additional setup after loading the view.
     }
@@ -32,7 +34,6 @@ class BooksViewController: UIViewController {
                 print("esta es mi respueta de tipo del modelo", response)
                 self.model = response
                 DispatchQueue.main.sync {
-                    self.hideComponents(flag: false)
                     self.tableViewBooks.reloadData()
                 }
             case .failure(let error):
@@ -41,7 +42,27 @@ class BooksViewController: UIViewController {
         }
     }
     
-    func configureTableView(){
+    func pageData() {
+        let searchQuery = searchBar.text?.replacing(" ", with: "_")
+        guard let search = searchQuery else { return }
+        let startIndex = model.items.count // Último índice + 1
+        URLSession.fetchBooksPage(withQuery: search, startIndex: startIndex, pageSize: pageSize) { result in
+            switch result {
+            case .success(let response):
+                print("esta es mi respuesta del modelo", response)
+                self.model.items.append(contentsOf: response.items)
+                DispatchQueue.main.async {
+                    self.tableViewBooks.reloadData()
+                    self.isLoadingData = false // Restablece el indicador de carga
+                }
+            case .failure(let error):
+                print("Error fetching data: \(error)")
+                self.isLoadingData = false
+            }
+        }
+    }
+    
+    func configureDelegate(){
         tableViewBooks.dataSource = self
         tableViewBooks.delegate = self
         searchBar.delegate = self
@@ -50,20 +71,6 @@ class BooksViewController: UIViewController {
     
     func configureUI(){
         labelTitle.text = "Google Books"
-        hideComponents(flag: true)
-    }
-    
-    func hideComponents(flag: Bool){
-        if flag == false {
-            tableViewBooks.isHidden = false
-            buttonMore.isHidden = false
-        } else {
-            tableViewBooks.isHidden = true
-            buttonMore.isHidden = true
-        }
-    }
-    @IBAction func actionButtonShowAll(_ sender: Any) {
-        
     }
     
 }
@@ -103,5 +110,21 @@ extension BooksViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         print("entre")
         fetchData()
+    }
+}
+
+extension BooksViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let visibleHeight = scrollView.frame.height
+        
+        if offsetY > contentHeight - visibleHeight {
+            print("llegue al final debo actualiar y evito consumir repetidas veces")
+            if !isLoadingData {
+                pageData()
+                isLoadingData = true
+            }
+        }
     }
 }
